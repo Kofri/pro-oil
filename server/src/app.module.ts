@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ViewerModule } from './viewer/viewer.module';
 import { UserModule } from './user/user.module';
 import { TokenModule } from './token/token.module';
@@ -8,11 +8,14 @@ import { AccountModule } from './account/account.module';
 import { MemberModule } from './member/member.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
+import { LoggerMiddleware } from './utils/logger.middleware';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `${process.cwd()}/src/config/env/.${process.env.NODE_ENV}.env`,
+      envFilePath: `${process.cwd()}/src/config/env/.${
+        process.env.NODE_ENV
+      }.env`,
       isGlobal: true,
     }),
     ViewerModule,
@@ -25,4 +28,8 @@ import { DatabaseModule } from './database/database.module';
     DatabaseModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

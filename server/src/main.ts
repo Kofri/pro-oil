@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { log } from 'console';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule, { cors: true, logger: ['error', 'debug'] });
   const config = new DocumentBuilder()
   .setTitle('oil shop')
   .setDescription('The shop web-team oil API description')

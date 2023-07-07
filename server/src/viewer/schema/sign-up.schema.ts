@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as Joi from 'joi';
 import { HydratedDocument } from 'mongoose';
+import { Roles } from 'src/common/enum/role.enum';
 
 export const signUpSchema = Joi.object({
   mobile: Joi.string()
@@ -116,7 +117,7 @@ export class SignUp {
   @Prop({ default: '' })
   serial: string;
 
-  @Prop({ default: ['USER'] })
+  @Prop({ default: [Roles.MEMBER] })
   role: Array<string>;
 
   @Prop({ default: new Date() })

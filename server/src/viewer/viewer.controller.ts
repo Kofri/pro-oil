@@ -15,7 +15,7 @@ import { SignUpBody } from './DTO/sign-up.dto';
 import { ViewerGuard } from './guard/viewer.guard';
 import { OtpBody } from './DTO/otp.dto';
 import { otpSchema } from './schema/otp.schema';
-import { IOtpReturnDTO } from './interface/return.interface';
+import { IOtpReturnDTO, ISignUpReturnDTO } from './interface/return.interface';
 
 @ApiTags('viewer')
 @Controller('viewer')
@@ -26,7 +26,7 @@ export class ViewerController {
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(ViewerGuard)
   @UsePipes(new JoiValidationPipe(signUpSchema))
-  signUp(@Body() signUpBody: SignUpBody) {
+  signUp(@Body() signUpBody: SignUpBody): Promise<ISignUpReturnDTO> {
     return this.viewerService.signUp(signUpBody);
   }
 

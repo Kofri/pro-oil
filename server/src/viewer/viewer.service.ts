@@ -15,6 +15,7 @@ import {
 } from './interface/otp.interface';
 import { createOtp, expiresMin, sendOtp } from 'src/utils/sms';
 import { IOtpReturnDTO, ISignUpReturnDTO } from './interface/return.interface';
+import { Roles } from '../common/enum/role.enum';
 import axios from 'axios';
 
 @Injectable()
@@ -24,7 +25,11 @@ export class ViewerService {
     @Inject('OTP_MODEL') private readonly otpModel: Model<IOtpModel>,
   ) {}
 
-  async signUp(signUpBody: ISignUpBodyDTO) {
+  async signIn(){
+
+  }
+
+  async signUp(signUpBody: ISignUpBodyDTO): Promise<ISignUpReturnDTO> {
     const returnMes: ISignUpReturnDTO = {
       return: {
         message: 'message',
@@ -91,6 +96,24 @@ export class ViewerService {
         HttpStatus.UNAUTHORIZED,
       );
     }
+    if(process.env.MOBILE_ADMIN === mobile) {
+      await new this.signUpModel({
+        mobile,
+        car,
+        gmail,
+        password,
+        tag,
+        address,
+        birthDate,
+        city,
+        nationalCode,
+        postalCode,
+        province,
+        name,
+        family,
+        role: [Roles.ADMIN, Roles.BLOGGER, Roles.MEMBER, Roles.TRANSFER]
+      }).save();
+    }
     await new this.signUpModel({
       mobile,
       car,
@@ -105,6 +128,7 @@ export class ViewerService {
       province,
       name,
       family,
+      role: [Roles.MEMBER]
     }).save();
     returnMes.return = {
       message: 'ثبت نام کاربر انجام شد',
@@ -218,5 +242,5 @@ export class ViewerService {
     }
     return returnMes;
   }
-  
+
 }

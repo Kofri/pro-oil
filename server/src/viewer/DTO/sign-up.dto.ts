@@ -13,17 +13,6 @@ export class SignUpBody {
   readonly mobile: string;
 
   @ApiProperty({
-    description: 'the national code',
-    minLength: 10,
-    maxLength: 10,
-    example: '0123456789',
-    required: true,
-    pattern: '/^[0-9]{10}$/',
-    type: String,
-  })
-  readonly nationalCode: string;
-
-  @ApiProperty({
     description: 'the full name of the car',
     minLength: 3,
     maxLength: 30,
@@ -43,16 +32,6 @@ export class SignUpBody {
     type: String,
   })
   readonly tag: string;
-
-  @ApiProperty({
-    description: 'the name of member',
-    minLength: 3,
-    maxLength: 43,
-    example: 'hosein jalali',
-    required: true,
-    type: String,
-  })
-  readonly name: string;
 
   @ApiProperty({
     description: 'the gmail or yahoo of member',
@@ -86,4 +65,15 @@ export class SignUpBody {
     type: String,
   })
   readonly otp: string;
+
+  @ApiProperty({
+    description: 'the province user',
+    minLength: 2,
+    maxLength: 20,
+    example: 'tehran',
+    required: false,
+    type: String,
+  })
+  readonly province: string;
+
 }

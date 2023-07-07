@@ -1,14 +1,21 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { ISignUpBody, ISignUpModel } from './interface/sign-up.interface';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { ISignUpBodyDTO, ISignUpModel } from './interface/sign-up.interface';
+import { IResultSearchLine } from './interface/search-line.interface';
 import { hashPass } from 'src/utils/hashing';
 import { Model } from 'mongoose';
-import { IOtpBody, IOtpModel } from './interface/otp.interface';
-import { createOtp, expiresMin, sendOtp } from 'src/utils/sms';
 import {
-  ISimpleReturn,
-} from 'src/common/interface/returns.interface';
-import { log } from 'console';
-import { IOtpReturn } from './interface/return.interface';
+  IOtpBodyDTO,
+  IOtpModel,
+  IOtpModelDTO,
+} from './interface/otp.interface';
+import { createOtp, expiresMin, sendOtp } from 'src/utils/sms';
+import { IOtpReturnDTO, ISignUpReturnDTO } from './interface/return.interface';
+import axios from 'axios';
 
 @Injectable()
 export class ViewerService {
@@ -17,16 +24,103 @@ export class ViewerService {
     @Inject('OTP_MODEL') private readonly otpModel: Model<IOtpModel>,
   ) {}
 
-  signUp(signUpBody: ISignUpBody) {
+  async signUp(signUpBody: ISignUpBodyDTO) {
+    const returnMes: ISignUpReturnDTO = {
+      return: {
+        message: 'message',
+        status: HttpStatus.OK,
+      },
+    };
     const hashPassword = hashPass(signUpBody.password);
-    return true;
+    signUpBody.password = hashPassword;
+    const viewer: IOtpModelDTO = await this.otpModel.findOne(
+      { mobile: signUpBody.mobile },
+      { __v: 0 },
+    );
+    if (!viewer) {
+      throw new HttpException('کاربری یافت نشد', HttpStatus.NOT_FOUND);
+    }
+    const { mobile, car, gmail, password, tag } = signUpBody;
+    const {
+      address,
+      birthDate,
+      city,
+      nationalCode,
+      postalCode,
+      province,
+      name,
+      family,
+    } = viewer;
+    const existMobileUser = await this.signUpModel.findOne({ mobile });
+    const existGmailUser = await this.signUpModel.findOne({ gmail });
+    const existNationalUser = await this.signUpModel.findOne({ nationalCode });
+    const existTagUser = await this.signUpModel.findOne({ tag });
+    const timestamp = viewer.expires - new Date().getTime();
+    if (viewer.otp !== signUpBody.otp) {
+      await this.otpModel.deleteOne({ _id: viewer._id });
+      throw new HttpException('کد احراز هویت صحبح نیست', HttpStatus.NOT_FOUND);
+    } else if (timestamp <= 0) {
+      await this.otpModel.deleteOne({ _id: viewer._id });
+      throw new HttpException(
+        'کد احراز هویت منقضی شده است',
+        HttpStatus.GATEWAY_TIMEOUT,
+      );
+    }
+    await this.otpModel.deleteOne({ _id: viewer._id });
+    if (existMobileUser) {
+      throw new HttpException(
+        'کاربری با این موبایل وجود دارد',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    if (existGmailUser) {
+      throw new HttpException(
+        'کاربری با این جیمیل وجود دارد',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    if (existNationalUser) {
+      throw new HttpException(
+        'کاربری با این کد ملی وجود دارد',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    if (existTagUser) {
+      throw new HttpException(
+        'کاربری با این پلاک وجود دارد',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    await new this.signUpModel({
+      mobile,
+      car,
+      gmail,
+      password,
+      tag,
+      address,
+      birthDate,
+      city,
+      nationalCode,
+      postalCode,
+      province,
+      name,
+      family,
+    }).save();
+    returnMes.return = {
+      message: 'ثبت نام کاربر انجام شد',
+      status: HttpStatus.CREATED
+    }
+    return returnMes;
   }
 
-  async otp(otpBody: IOtpBody): Promise<IOtpReturn> {
-    const returnMes: IOtpReturn = {
+  async otp(otpBody: IOtpBodyDTO): Promise<IOtpReturnDTO> {
+    const returnMes: IOtpReturnDTO = {
       return: {
         status: HttpStatus.OK,
         message: 'message',
+        name: 'unknown',
+        family: 'unknown',
+        expires: new Date().getTime(),
       },
     };
     const existingOtp = await this.otpModel.findOne({ mobile: otpBody.mobile });
@@ -39,15 +133,61 @@ export class ViewerService {
         );
       }
     }
-    const otp = createOtp(6);
-    if (process.env.NODE_ENV === 'prod') {
-      const isSend = await sendOtp(otpBody.mobile, otp);
-      if (!isSend) {
-        throw new HttpException(
-          'خطا در ارسال پبام',
-          HttpStatus.INTERNAL_SERVER_ERROR,
+    try {
+      const otp = createOtp(6);
+      if (process.env.NODE_ENV === 'prod') {
+        const resultSearchLine: IResultSearchLine = await axios.get(
+          'https://inquery.ir/:80',
+          {
+            params: {
+              token: process.env.API_KEY_SEARCH_LINK,
+              op: 'IdCode',
+              BirthDate: otpBody.birthDate,
+              IdCode: otpBody.nationalCode,
+            },
+          },
         );
-      } else {
+        if (!resultSearchLine) {
+          throw new HttpException(
+            'خطا در شناسایی کاربر رخ داد',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+        const isSend = await sendOtp(otpBody.mobile, otp);
+        if (!isSend) {
+          throw new HttpException(
+            'خطا در ارسال پبام',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        } else {
+          const expires = expiresMin(+process.env.EXPIRES_OTP);
+          existingOtp
+            ? await this.otpModel.updateOne(
+                { mobile: otpBody.mobile },
+                { otp, expires },
+              )
+            : await new this.otpModel({
+                mobile: otpBody.mobile,
+                nationalCode: otpBody.nationalCode,
+                birthDate: otpBody.birthDate,
+                otp,
+                expires,
+                name: resultSearchLine.Result.Name,
+                family: resultSearchLine.Result.Family,
+                postalCode: resultSearchLine.Result.PostalCode,
+                province: resultSearchLine.Result.Province,
+                city: resultSearchLine.Result.City,
+                address: resultSearchLine.Result.Address,
+              }).save();
+          returnMes.return = {
+            status: HttpStatus.ACCEPTED,
+            message: 'کد ارسال شد',
+            name: resultSearchLine.Result.Name,
+            family: resultSearchLine.Result.Family,
+            expires,
+          };
+        }
+      } else if (process.env.NODE_ENV === 'dev') {
         const expires = expiresMin(+process.env.EXPIRES_OTP);
         existingOtp
           ? await this.otpModel.updateOne(
@@ -56,33 +196,27 @@ export class ViewerService {
             )
           : await new this.otpModel({
               mobile: otpBody.mobile,
+              nationalCode: otpBody.nationalCode,
+              birthDate: otpBody.birthDate,
               otp,
               expires,
             }).save();
         returnMes.return = {
           status: HttpStatus.ACCEPTED,
           message: 'کد ارسال شد',
-          expires
+          name: 'nam-unknown',
+          family: 'fam-unknown',
+          otp,
+          expires,
         };
       }
-    } else if (process.env.NODE_ENV === 'dev') {
-      const expires = expiresMin(+process.env.EXPIRES_OTP);
-      existingOtp
-        ? await this.otpModel.updateOne(
-            { mobile: otpBody.mobile },
-            { otp, expires },
-          )
-        : await new this.otpModel({
-            mobile: otpBody.mobile,
-            otp,
-            expires,
-          }).save();
-      returnMes.return = {
-        status: HttpStatus.ACCEPTED,
-        message: 'کد ارسال شد',
-        otp,
-      };
+    } catch (error) {
+      throw new HttpException(
+        'خطا در شناسایی کاربر رخ داد',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
     return returnMes;
   }
+  
 }

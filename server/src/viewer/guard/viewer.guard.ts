@@ -6,7 +6,6 @@ export class ViewerGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    
     return true;
   }
 }

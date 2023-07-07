@@ -15,7 +15,7 @@ import { SignUpBody } from './DTO/sign-up.dto';
 import { ViewerGuard } from './guard/viewer.guard';
 import { OtpBody } from './DTO/otp.dto';
 import { otpSchema } from './schema/otp.schema';
-import { IOtpReturn } from './interface/return.interface';
+import { IOtpReturnDTO } from './interface/return.interface';
 
 @ApiTags('viewer')
 @Controller('viewer')
@@ -34,7 +34,7 @@ export class ViewerController {
   @HttpCode(HttpStatus.ACCEPTED)
   @UseGuards(ViewerGuard)
   @UsePipes(new JoiValidationPipe(otpSchema))
-  async otp(@Body() otpBody: OtpBody): Promise<IOtpReturn>{
+  async otp(@Body() otpBody: OtpBody): Promise<IOtpReturnDTO>{
     return await this.viewerService.otp(otpBody);
   }
 }

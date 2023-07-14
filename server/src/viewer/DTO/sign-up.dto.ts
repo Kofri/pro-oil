@@ -50,7 +50,7 @@ export class SignUpBody {
     maxLength: 11,
     example: 'a******',
     required: true,
-    pattern: '/^([a-z]|[A-Z])(w|#|&|%|@|$)*$/',
+    pattern: '/^([a-z]|[A-Z])(\\w|#|&|%|@|\\$){5,}$/',
     type: String,
   })
   readonly password: string;
@@ -65,15 +65,24 @@ export class SignUpBody {
     type: String,
   })
   readonly otp: string;
-
   @ApiProperty({
-    description: 'the province user',
+    description: 'the birth date',
     minLength: 2,
-    maxLength: 20,
-    example: 'tehran',
-    required: false,
+    maxLength: 15,
+    example: 'hosein',
+    required: true,
     type: String,
   })
-  readonly province: string;
+  readonly name: string;
+
+  @ApiProperty({
+    description: 'the family of member',
+    minLength: 2,
+    maxLength: 20,
+    example: 'jalali',
+    required: true,
+    type: String,
+  })
+  readonly family: string;
 
 }

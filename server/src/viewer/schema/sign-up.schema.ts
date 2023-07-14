@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as Joi from 'joi';
 import { HydratedDocument } from 'mongoose';
-import { Roles } from 'src/common/enum/role.enum';
+import { RolesEnum } from 'src/common/enum/role.enum';
 
 export const signUpSchema = Joi.object({
   mobile: Joi.string()
@@ -12,7 +12,7 @@ export const signUpSchema = Joi.object({
     .message('شکل تلفن صحیح نیست')
     .required()
     .messages({ 'any.required': 'فیلد موبایل وجود ندارد' }),
-    
+
   car: Joi.string()
     .trim()
     .min(3)
@@ -44,7 +44,7 @@ export const signUpSchema = Joi.object({
     .message('تعداد حروف صحیح نیست')
     .max(35)
     .message('تعداد حروف صحیح نیست')
-    .pattern(/^([a-z]|[A-Z])(\w|#|&|%|@|\$)*$/)
+    .pattern(/^([a-z]|[A-Z])(\w|#|&|%|@|\$){5,}$/)
     .message('فرمت رمز عبور اشتباه است')
     .required()
     .messages({ 'any.required': 'فیلد رمز عبور وجود ندارد' }),
@@ -57,6 +57,24 @@ export const signUpSchema = Joi.object({
     .message('محتوا ارسالی صحبح نمی باشد')
     .required()
     .messages({ 'any.required': 'فیلد کد احراز هویت وجود ندارد' }),
+
+  name: Joi.string()
+    .trim()
+    .min(2)
+    .message('نام کمتر از ۲ حرف پذیرفته نیست')
+    .max(15)
+    .message('نام بیشتر از ۱۵ حرف پذیرفته نیست')
+    .required()
+    .messages({ 'any.required': 'فیلد نام وجود ندارد' }),
+
+  family: Joi.string()
+    .trim()
+    .min(2)
+    .message('نام خانوادگی کمتر از ۲ حرف پذیرفته نیست')
+    .max(20)
+    .message('نام خانوادگی بیشتر از ۲۰ حرف پذیرفته نیست')
+    .required()
+    .messages({ 'any.required': 'فیلد نام خانوادگی وجود ندارد' }),
 });
 
 export type TypeSignUpSchema = HydratedDocument<SignUp>;
@@ -101,15 +119,15 @@ export class SignUp {
 
   @Prop({ default: '' })
   province: string;
-  
+
   @Prop({ default: '' })
   city: string;
-  
+
   @Prop({ default: '' })
   birthDate: string;
 
   @Prop({ default: '' })
-  Address: string;
+  address: string;
 
   @Prop({ default: '' })
   postalCode: string;
@@ -117,7 +135,7 @@ export class SignUp {
   @Prop({ default: '' })
   serial: string;
 
-  @Prop({ default: [Roles.MEMBER] })
+  @Prop({ default: [RolesEnum.MEMBER] })
   role: Array<string>;
 
   @Prop({ default: new Date() })

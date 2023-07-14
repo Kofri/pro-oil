@@ -11,6 +11,7 @@ export const otpSchema = Joi.object({
     .message('شکل شماره اشتباه است')
     .required()
     .messages({ 'any.required': 'فیلد موبایل وجود ندارد' }),
+
   nationalCode: Joi.string()
     .trim()
     .length(10)
@@ -19,6 +20,7 @@ export const otpSchema = Joi.object({
     .message('کد ملی صحبح نیست')
     .required()
     .messages({ 'any.required': 'فیلد کد ملی وجود ندارد' }),
+
   birthDate: Joi.string()
     .trim()
     .length(10)
@@ -29,6 +31,37 @@ export const otpSchema = Joi.object({
     .message('')
     .required()
     .messages({ 'any.required': 'فیلد زادرود وجود ندارد' }),
+
+  province: Joi.string()
+    .trim()
+    .min(2)
+    .message('استان کمتر از ۲ حرف پذیرفته نیست')
+    .max(20)
+    .message('استان بیشتر از ۲۰ حرف پذیرفته نیست')
+    .pattern(/^[\u0600-\u06FF\s]{2,20}/)
+    .message('زبان تایپ فارسی نیست')
+    .required()
+    .messages({ 'any.required': 'فیلد استان وجود ندارد' }),
+
+  city: Joi.string()
+    .trim()
+    .min(2)
+    .message('شهر کمتر از ۲ حرف پذیرفته نیست')
+    .max(20)
+    .message('شهر بیشتر از ۲۰ حرف پذیرفته نیست')
+    .pattern(/^[\u0600-\u06FF\s]{2,20}/)
+    .message('زبان تایپ فارسی نیست'),
+
+  address: Joi.string()
+    .trim()
+    .min(5)
+    .message('آدرس کمتر از ۵ حرف پذیرفته نیست')
+    .max(100)
+    .message('آدرس بیشتر از ۱۰۰ حرف پذیرفته نیست')
+    .pattern(/^([\u0600-\u06FF\s0-9]+ ?-? ?)+$/)
+    .message('فرمت ارسالی آدرس پدیرفته نیست'),
+
+  postalCode: Joi.string().trim().length(10).message('کد پستی معتبر نیست'),
 });
 
 export type TypeOtpSchema = HydratedDocument<Otp>;
@@ -40,7 +73,7 @@ export class Otp {
 
   @Prop({ required: true })
   nationalCode: string;
-  
+
   @Prop({ required: true })
   birthDate: string;
 
@@ -50,17 +83,11 @@ export class Otp {
   @Prop({ required: true })
   expires: number;
 
-  @Prop({ default: 'Nam-unknown' })
-  name: string;
-
-  @Prop({ default: 'Fam-unknown' })
-  family: string;
-
-  @Prop({ default: '' })
-  province: string;
-  
-  @Prop({ default: '' })
+  @Prop({ required: true })
   city: string;
+
+  @Prop({ required: true })
+  province: string;
 
   @Prop({ default: '' })
   address: string;

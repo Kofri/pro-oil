@@ -4,6 +4,10 @@ export interface IOtpBodyDTO {
   mobile: string;
   nationalCode: string;
   birthDate: string;
+  province: string;
+  city: string;
+  address?: string;
+  postalCode?: string;
 }
 
 export interface IOtpModelDTO {
@@ -13,8 +17,6 @@ export interface IOtpModelDTO {
   expires: number;
   nationalCode: string;
   birthDate: string;
-  name: string;
-  family: string;
   province: string;
   city: string;
   address: string;
@@ -27,8 +29,6 @@ export interface IOtpModel extends Document {
   readonly expires: number;
   readonly nationalCode: string;
   readonly birthDate: string;
-  readonly name: string;
-  readonly family: string;
   readonly province: string;
   readonly city: string;
   readonly address: string;

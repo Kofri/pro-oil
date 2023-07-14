@@ -2,12 +2,13 @@ import { Document } from "mongoose";
 
 export interface ISignUpBodyDTO {
   mobile: string;
+  otp: string;
   car: string;
   tag: string;
   gmail: string;
   password: string;
-  otp: string;
-  province?: string;
+  name: string;
+  family: string;
 }
 
 export interface ISignUpModel extends Document {

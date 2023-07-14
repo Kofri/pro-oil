@@ -8,7 +8,7 @@ import { AccountModule } from './account/account.module';
 import { MemberModule } from './member/member.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
-import { LoggerMiddleware } from './utils/logger.middleware';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -30,6 +30,7 @@ import { LoggerMiddleware } from './utils/logger.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    process.env.NODE_ENV !== 'prod' &&
+      consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

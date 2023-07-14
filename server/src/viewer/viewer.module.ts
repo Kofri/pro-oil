@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { ViewerController } from './viewer.controller';
 import { ViewerService } from './viewer.service';
 import { DatabaseModule } from 'src/database/database.module';
-import { otpProvider, signupProvider, signupTokenProvider } from './provider/viewer.provider';
+import { fastOtpProvider, otpProvider, signupProvider, refreshTokenProvider } from './provider/viewer.provider';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports:[DatabaseModule],
+  imports:[JwtModule.register({global: true}), DatabaseModule],
   controllers: [ViewerController],
-  providers: [ViewerService, ...otpProvider, ...signupProvider, ...signupTokenProvider]
+  providers: [ViewerService, ...otpProvider, ...signupProvider, ...refreshTokenProvider, ...fastOtpProvider]
 })
 export class ViewerModule {}

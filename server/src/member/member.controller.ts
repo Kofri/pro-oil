@@ -1,11 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('account')
-@Controller('account/member')
+@ApiTags('member')
+@Controller('member')
 export class MemberController {
-    @Get('')
-    sayF(){
-        return 'd'
-    }
+    @Put('change-password')
+    changePassword() {}
 }

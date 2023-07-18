@@ -1,7 +1,7 @@
 import { Mongoose } from 'mongoose';
 import { SignUpSchema } from '../schema/sign-up.schema';
 import { OtpSchema } from '../schema/otp.schema';
-import { RefreshTokenSchema } from '../schema/refresh-token.schema';
+import { RefreshTokenSchema } from 'src/token/schema/refresh-token.schema';
 import { FastOtpSchema } from '../schema/fast-otp.schema';
 
 export const signupProvider = [

@@ -1,14 +1,15 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ViewerModule } from './viewer/viewer.module';
-import { UserModule } from './user/user.module';
+import { TransferModule } from './transfer/transfer.module';
 import { TokenModule } from './token/token.module';
 import { ProductModule } from './product/product.module';
 import { AdminModule } from './admin/admin.module';
-import { AccountModule } from './account/account.module';
 import { MemberModule } from './member/member.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { UserModule } from './user/user.module';
+import { BloggerModule } from './blogger/blogger.module';
 
 @Module({
   imports: [
@@ -18,13 +19,14 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
       }.env`,
       isGlobal: true,
     }),
-    ViewerModule,
-    UserModule,
-    TokenModule,
-    ProductModule,
     AdminModule,
-    AccountModule,
+    BloggerModule,
     MemberModule,
+    ProductModule,
+    TokenModule,
+    TransferModule,
+    UserModule,
+    ViewerModule,
     DatabaseModule,
   ],
 })

@@ -11,6 +11,30 @@ export interface ISignUpBodyDTO {
   family: string;
 }
 
+export interface ISignUpModelDTO {
+  mobile: string;
+  nationalCode: string;
+  car: string;
+  tag: string;
+  name: string;
+  family: string;
+  gmail: string;
+  password: string;
+  cash: string;
+  bills: Array<string>;
+  discountCode: Array<string>;
+  recentTransactions: Array<Object>;
+  province: string;
+  city: string;
+  birthData: string;
+  Address: string;
+  postalCode: string;
+  serial: string;
+  role: Array<string>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ISignUpModel extends Document {
   readonly mobile: string;
   readonly nationalCode: string;

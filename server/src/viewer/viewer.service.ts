@@ -18,8 +18,9 @@ import { RolesEnum } from '../common/enum/role.enum';
 import { IFastOtpBodyDTO, IFastOtpModel } from './interface/fast-otp.interface';
 import { log } from 'console';
 import { JwtService } from '@nestjs/jwt';
-import { IRefreshTokenModel } from './interface/refresh-token.interface';
+import { IRefreshTokenModel } from '../token/interface/refresh-token.interface';
 import { ISignInBodyDTO } from './interface/sign-in.interface';
+import { Jwt } from 'src/utils/jwt';
 
 @Injectable()
 export class ViewerService {
@@ -223,19 +224,9 @@ export class ViewerService {
     const member = await this.signUpModel.findOne({
       mobile: signInBody.mobile,
     });
-    const accessToken = await this.jwtService.signAsync(
-      { mobile: signInBody.mobile },
-      {
-        expiresIn: process.env.EXPIRES_JWT,
-        secret: process.env.SECRET_KEY_ACCESS_JWT,
-      },
-    );
-    const refreshToken = await this.jwtService.signAsync(
-      { mobile: signInBody.mobile },
-      {
-        expiresIn: process.env.EXPIRES_JWT,
-        secret: process.env.SECRET_KEY_REFRESH_JWT,
-      },
+    const token = new Jwt(this.jwtService);
+    const { accessToken, refreshToken } = await token.createToken(
+      signInBody.mobile,
     );
     await this.refreshTokenModel.updateOne(
       { id: member._id },
@@ -265,14 +256,8 @@ export class ViewerService {
     const viewer: IOtpModelDTO = await this.otpModel.findOneAndDelete({
       mobile,
     });
-    const {
-      birthDate,
-      city,
-      nationalCode,
-      postalCode,
-      province,
-      address,
-    } = viewer;
+    const { birthDate, city, nationalCode, postalCode, province, address } =
+      viewer;
     let role = [];
     process.env.MOBILE_ADMIN === mobile
       ? (role = [
@@ -281,7 +266,7 @@ export class ViewerService {
           RolesEnum.MEMBER,
           RolesEnum.TRANSFER,
         ])
-      : [RolesEnum.MEMBER];
+      : role = [RolesEnum.MEMBER];
     const newMember = await new this.signUpModel({
       mobile,
       car,
@@ -298,19 +283,9 @@ export class ViewerService {
       family,
       role,
     }).save();
-    const accessToken = await this.jwtService.signAsync(
-      { mobile: signUpBody.mobile },
-      {
-        expiresIn: process.env.EXPIRES_JWT,
-        secret: process.env.SECRET_KEY_ACCESS_JWT,
-      },
-    );
-    const refreshToken = await this.jwtService.signAsync(
-      { mobile: signUpBody.mobile },
-      {
-        expiresIn: process.env.EXPIRES_JWT,
-        secret: process.env.SECRET_KEY_REFRESH_JWT,
-      },
+    const token = new Jwt(this.jwtService);
+    const { accessToken, refreshToken } = await token.createToken(
+      signUpBody.mobile,
     );
     await new this.refreshTokenModel({
       id: newMember._id,
